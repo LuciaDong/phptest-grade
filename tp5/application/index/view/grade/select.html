@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Layui</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="__STATIC__/layui/css/layui.css">
+  <script src="__STATIC__/jQuery/jquery-3.3.1.min.js"></script>
+  <script>
+    function add(){
+      document.getElementById("win").style.display="";
+      document.getElementById("back").style.display="";
+    }
+    function change(n){
+            document.getElementById('win').style.display=n?'block':'none';     /* 点击按钮打开/关闭 对话框 */
+            document.getElementById('back').style.display=n?'block':'none';
+    }
+       
+  </script>
+  
+  <style>
+    a{
+      text-decoration:none;}
+    * {
+      box-sizing: border-box;
+    }
+    
+    input[type=text],input[type=date],textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    input[type=radio]{
+      margin:17px;
+      }
+    .container {
+      width:30%;
+      border-radius: 5px;
+      background-color: white;
+      padding: 20px;
+      margin:-200px 35%;
+      z-index: 5;
+    }
+    /* 清除浮动 */
+    .layui-form-item:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+    /* 响应式布局 layout - 在屏幕宽度小于 600px 时， 设置为上下堆叠元素 
+    @media screen and (max-width: 600px) {
+      .col-25, .col-75, input[type=submit] {
+        width: 100%;
+        margin-top: 0;
+      }
+    }*/
+  </style>
+</head>
+<body>
+<div class="layui-row">
+  <div class="layui-col-md4">
+    <form class="layui-form" action="{:url('index/search')}" method="POST">
+      <label class="layui-form-label">搜索:</label>
+      <div class="layui-inline">
+        <input class="layui-input" name="sv" id="sv"  autocomplete="off" placeholder="关键词:年级名"/>
+      </div>
+      <button class="layui-btn" type="submit" id="search"><i class="layui-icon">&#xe615;</i>搜索  </button>   
+    </form>
+  </div>  
+  <div class="layui-col-md4" id="layerDemo">
+    <button class="layui-btn" lay-event="add" onClick="return add()">
+    <i class="layui-icon">&#xe654;</i>新增
+    </button>    
+  </div>
+</div>   
+<table class="layui-table" lay-skin="nob" id="table-list">
+  <thead>
+    <tr>
+      <!-- <th >ID</th> -->
+      <th >年级名</th>
+      <th >年级描述</th>
+      <th >届</th>
+      <th >开始时间</th>
+      <th >结束时间</th>
+      <th >状态</th>
+      <th >操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {foreach $info as $list1}
+      <tr>
+        <!-- <th>{$list1.id}</th> -->
+        <th>{$list1.name}</th>
+        <th>{$list1.content}</th>
+        <th>{$list1.graduates}</th>
+        <th>{$list1.starttime|date="Y-m-d H:i:s",###}</th>
+        <th>{$list1.endtime|date="Y-m-d H:i:s",###}</th>
+        <th>
+          {if condition = "$list1.status eq 1"}正常
+          {elseif condition = "$list1.status eq 9"}删除
+          {/if}
+        </th>
+        <th id="layerDemo">
+          <!-- <a id="edit" lay-event="edit" class="layui-btn layui-btn-xs" href="{:url('index/edit',['id'=>$list1.id])}"><i class="layui-icon">&#xe642</i>编辑</a> -->
+            <!-- <button  class="layui-btn layui-btn-xs" data-method="notice" id="gid" value="{$list1.id}">
+            <i class="layui-icon">&#xe642</i>编辑</button> -->
+            <a id="edit" lay-event="edit" onclick="onedit('{$list1.id}');" class="layui-btn layui-btn-xs" href="#"><i class="layui-icon">&#xe642</i>编辑</a>  
+          <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" href="javascript:if(confirm('确实要删除吗?'))location='{:url('index/delete',['id'=>$list1.id])}'"><i class="layui-icon">&#xe640</i>删除</a>
+        </th>
+      </tr>
+    {/foreach}
+   </tbody>
+</table>
+<div style="margin: 0;">
+  {$page}
+</div>
+<script src="__STATIC__/layui/layui.js"></script>
+<div id="LAY_democodejs" >
+  <script>
+  layui.use('table', function(){
+    var table = layui.table;
+  });
+  layui.use('layer', function(){ //独立版的layer无需执行这一句
+    var $ = layui.jquery, layer = layui.layer;  
+  });
+  </script>
+  <script>
+    layui.use(['form', 'layedit', 'laydate'], function(){
+      var form = layui.form
+      ,layer = layui.layer
+      ,layedit = layui.layedit
+      ,laydate = layui.laydate;
+      //日期
+      laydate.render({
+        elem: '#date'
+        ,trigger:'click'
+      });
+      laydate.render({
+        elem: '#date1'
+      });
+      //自定义验证规则
+      form.verify({
+        id: function(value){
+          if(value.length <1 ){
+            return 'id不能为空！';
+          }
+        }
+      });
+    });
+</script>
+<script>
+  layui.use(['layer','form',"element"], function(){ 
+    var $ = layui.jquery, layer = layui.layer,form = layui.form; 
+    //触发事件
+    //document.getElementById("edit").click();
+    // var active = {
+      window.onedit = function(id){
+      //notice: function(){
+        //var eid = $('#gid').val();
+        layer.open({
+          type: 2
+          ,title: "修改信息" 
+          ,shadeClose:true
+          ,area: ['36%', '73%']
+          ,shade: 0.5
+          ,id: 'LAY_layuipro' //设定一个id，防止重复弹出
+          ,btn: ['确定', '取消']
+          ,btnAlign: 'r'
+          ,moveType: 1 //拖拽模式，0或者1
+          //,content: "{:url('index/edit',['id'=>$list1.id])}"
+          ,content:"{:url('index/edit')}?id="+id
+          ,offset:'50px'
+          ,success: function(layero){
+        }
+        ,yes:function(index,layero){
+          var body = layer.getChildFrame ('body', index); 
+   	      var iframeBtn = body.find ('#edit');// 得到 iframe 页面层的提交按钮
+          iframeBtn.click ();// 模拟 iframe 页面层的提交按钮点击
+          layer.closeAll();
+          location.reload(); 
+        }
+        ,btn2 : function() {
+					layer.closeAll();
+					location.reload();
+				}
+        });
+      };
+    //};    
+    // $('#layerDemo .layui-btn').on('click', function(){
+    //   var othis = $(this), method = othis.data('method');
+    //   active[method] ? active[method].call(this, othis) : '';
+    // });
+    
+  });
+</script>       
+</div>
+<!--添加表单 -->	
+<div id="back" style="display:none; position:absolute; left:0; top:0; width:100%; height:100%; background-color: #000; opacity:0.5;"></div>
+
+<div class="container" id="win" style="display:none; position: absolute;" >  
+  <form class="layui-form" action="{:url('index/add')}" method="POST">
+    <div style="background-color: #eeeeee; z-index: 6; position: absolute;margin-top: -60px; left: 0; width: 100%;height: 50px; border: 2px #cfcccc;">  
+      <h3 class="layui-col-md4" style="line-height: 50px;padding-left: 10px;">添加信息</h3>
+      <a  style="line-height: 50px;position: absolute; left: 350px; font-weight: 600; float: right;" href='#' ; type="submit" value="取消" onclick="change(); return false"><i class="layui-icon">&#x1006;</i></a>
+    </div>
+    <!-- <div class="layui-form-item">
+    <div class="col-25">
+      <label for="Id">Id</label>
+    </div>
+    <div class="col-75">
+      <input type="text" class="layui-input" id="id" name="id" lay-verify="id" lay-reqtext="ID是必填项，岂能为空？" placeholder="请输入ID" required autocomplete="off">
+    </div>
+  </div> -->
+  
+  <div class="layui-form-item" style="margin-top: 0px;">
+    <label for="Name" class="layui-form-label">Name</label>
+    <div class="layui-input-block">
+      <input type="text" class="layui-input" id="name" name="name" lay-verify="name" required autocomplete="off" placeholder="请输入年级名">
+    </div>
+  </div>
+  
+  <div class="layui-form-item">
+    <label for="Content" class="layui-form-label">Content</label> 
+    <div class="layui-input-block">
+      <textarea id="content" name="content"  placeholder="请输入内容" required autocomplete="off" class="layui-textarea" style="height:100px"></textarea>
+    </div>
+  </div> 
+  <div class="layui-form-item">
+    <label for="graduates" class="layui-form-label">Graduates</label>
+    <div class="layui-input-block">
+      <input type="text" class="layui-input" id="graduates" name="graduates" lay-verify="graduates" required autocomplete="off" placeholder="请输入届">
+    </div>
+  </div>
+   <div class="layui-form-item">
+    <label for="starttime" class="layui-form-label">Starttime</label>
+    <div class="layui-input-block">
+      <input type="text" id="date" name="starttime" lay-verify="date" placeholder="yyyy-MM-dd" required autocomplete="off" class="layui-input" />
+    </div>
+  </div>
+   <div class="layui-form-item">
+    <label for="endtime" class="layui-form-label">Endtime</label>
+    <div class="layui-input-block">
+       <input type="text" id="date1" name="endtime" lay-verify="date" placeholder="yyyy-MM-dd" required autocomplete="off" class="layui-input" />
+    </div>
+  </div>
+  
+   <div class="layui-form-item">
+    <label for="Status" class="layui-form-label">Status</label>
+    <div class="layui-input-block">
+      <input type="radio" name="status" value="正常" title="正常" checked="">
+      <input type="radio" name="status" value="删除" title="删除">   
+    </div>
+  </div>
+  <div class="layui-form-item" style="text-align: right;">
+    <button class="layui-btn" type="submit" value="确定" onclick="add()">确定</button>
+    <a class="layui-btn" href='#' ; type="submit" value="取消" onclick="change(); return false">取消</a>
+  </div>
+  </form>
+</div>
+
+</body>
+</html>
